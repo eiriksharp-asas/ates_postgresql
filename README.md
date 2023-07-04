@@ -1,8 +1,10 @@
 # ates_postgresql
 
 A STANDARDIZED MULTISCALE, FUZZY GIS DATA MODEL FOR ATES ZONING
-Eirik Sharp, Cam Campbell, Grant Statham, Bryce Schroers 
-Alpine Solutions (esharp@avalancheservices.ca)
+
+Eirik Sharp  (esharp@avalancheservices.ca), Cam Campbell, Grant Statham, Bryce Schroers 
+
+
 
 The Avalanche Terrain Exposure Scale (ATES) zoning is a critical tool for managing the risk of avalanches and ensuring safety in backcountry travel. While traditionally used in printed formats, such as trailhead signs and paper maps, ATES data is increasingly utilized in digital applications, such as web maps and mobile applications. This paper proposes a standardized GIS data model and a set of topological rules for ATES-related spatial data optimized for existing and anticipated digital use cases.
 
