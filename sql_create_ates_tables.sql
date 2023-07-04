@@ -27,9 +27,12 @@ BEGIN
     (
         id SERIAL PRIMARY KEY,
 		guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+        geom geometry(MultiPolygon,4326);
+        data_owner character(50) COLLATE pg_catalog."default";
         feature_name character varying(250) COLLATE pg_catalog."default" NOT NULL,
         feature_description character(250) COLLATE pg_catalog."default",
-        feature_type character(50) COLLATE pg_catalog."default",
+        data_owner character(50) COLLATE pg_catalog."default",
+        feature_comments character varying(250) COLLATE pg_catalog."default",
         CONSTRAINT fk_feature_type FOREIGN KEY (feature_type)
             REFERENCES ' || sch || '."lu_ates_featureTypes" (feature_type) MATCH SIMPLE
             ON UPDATE CASCADE
@@ -63,7 +66,6 @@ BEGIN
         area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
-        data_owner character(50) COLLATE pg_catalog."default",
         data_source character varying(250) COLLATE pg_catalog."default",
         created_by character varying(50) COLLATE pg_catalog."default",
         created_on timestamp without time zone,
@@ -91,8 +93,6 @@ BEGIN
         area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
-        data_owner character(50) COLLATE pg_catalog."default",
-        data_source character varying(250) COLLATE pg_catalog."default",
         created_by character varying(50) COLLATE pg_catalog."default",
         created_on timestamp without time zone,
         feature_comments character varying(250) COLLATE pg_catalog."default",
@@ -102,12 +102,12 @@ BEGIN
             ON DELETE NO ACTION
     )';
 
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.warnings
+    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.lu_warnings
     (
         id SERIAL PRIMARY KEY,
         guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-        type character varying(250) COLLATE pg_catalog."default" NOT NULL,
-        warning character varying(250) COLLATE pg_catalog."default" NOT NULL
+        warning_type character varying(250) COLLATE pg_catalog."default" NOT NULL,
+        warning_text character varying(250) COLLATE pg_catalog."default" NOT NULL UNIQUE
     )';
 
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.decision_points_warnings
@@ -121,10 +121,42 @@ BEGIN
             ON UPDATE CASCADE
             ON DELETE NO ACTION,
         CONSTRAINT fk_warnings_guid FOREIGN KEY (warnings_guid)
-            REFERENCES ' || sch || '.warnings (guid) MATCH SIMPLE
+            REFERENCES ' || sch || '.lu_warnings (guid) MATCH SIMPLE
             ON UPDATE CASCADE
             ON DELETE NO ACTION
     )';
+
+    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.lu_points_of_interest
+        (
+            id serial PRIMARY KEY,
+            guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+            poi_guid UUID,
+            poi_type character varying(250) COLLATE pg_catalog."default" NOT NULL UNIQUE
+        );';
+    
+
+    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.points_of_interest
+        (
+            id serial PRIMARY KEY,
+            guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+            geom geometry(Point,4326),
+            area_guid UUID,
+            feature_name character varying(250) COLLATE pg_catalog."default",
+            feature_description character varying(500) COLLATE pg_catalog."default",
+            data_source character varying(250) COLLATE pg_catalog."default",
+            created_by character varying(50) COLLATE pg_catalog."default",
+            created_on timestamp without time zone,
+            poi_type character(50) COLLATE pg_catalog."default",
+            feature_comments character(250) COLLATE pg_catalog."default",
+            CONSTRAINT fk_area_id FOREIGN KEY (area_guid)
+                REFERENCES ' || sch || '.areas (guid) MATCH SIMPLE
+                ON UPDATE CASCADE
+                ON DELETE NO ACTION,
+            CONSTRAINT fk_points_of_interst_guid FOREIGN KEY (poi_type)
+                REFERENCES ' || sch || '.lu_points_of_interest (poi_type) MATCH SIMPLE
+                ON UPDATE CASCADE
+                ON DELETE NO ACTION
+        );';
 
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.ates_linear20
     (
@@ -134,7 +166,6 @@ BEGIN
         area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
-        data_owner character(50) COLLATE pg_catalog."default",
         data_source character varying(250) COLLATE pg_catalog."default",
         created_by character varying(50) COLLATE pg_catalog."default",
         created_on timestamp without time zone,
@@ -149,6 +180,7 @@ BEGIN
         route_options integer,
         exposure_time integer,
         feature_comments character varying(250) COLLATE pg_catalog."default",
+        precision_m integer DEFAULT 0,
         CONSTRAINT fk_area_guid FOREIGN KEY (area_guid)
             REFERENCES ' || sch || '.areas (guid) MATCH SIMPLE
             ON UPDATE CASCADE
@@ -203,7 +235,6 @@ BEGIN
         area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
-        data_owner character(50) COLLATE pg_catalog."default",
         data_source character varying(250) COLLATE pg_catalog."default",
         created_by character varying(50) COLLATE pg_catalog."default",
         created_on timestamp without time zone,
@@ -218,6 +249,7 @@ BEGIN
         route_options integer,
         exposure_time integer,
         feature_comments character varying(250) COLLATE pg_catalog."default",
+        precision_m integer DEFAULT 0,
         CONSTRAINT fk_area_guid FOREIGN KEY (area_guid)
             REFERENCES ' || sch || '.areas (guid) MATCH SIMPLE
             ON UPDATE CASCADE

@@ -11,7 +11,6 @@ BEGIN
             dp.area_guid,
             dp.feature_name,
             dp.feature_description,
-            dp.data_owner,
             dp.data_source,
             dp.created_by,
             dp.created_on,
@@ -24,7 +23,7 @@ BEGIN
                     w.type,
                     array_agg(w.warning) AS warnings
                 FROM ' || sch || '.decision_points_warnings dpw
-                    JOIN ' || sch || '.warnings w ON dpw.warnings_guid = w.guid
+                    JOIN ' || sch || '.lu_warnings w ON dpw.warnings_guid = w.guid
                 WHERE w.type::text = ''Concern''::text
                 GROUP BY dpw.decision_points_guid, w.type
             ) concerns ON concerns.dp_guid = dp.guid
@@ -33,7 +32,7 @@ BEGIN
                     w.type,
                     array_agg(w.warning) AS warnings
                 FROM ' || sch || '.decision_points_warnings dpw
-                    JOIN ' || sch || '.warnings w ON dpw.warnings_guid = w.guid
+                    JOIN ' || sch || '.lu_warnings w ON dpw.warnings_guid = w.guid
                 WHERE w.type::text = ''Managing risk''::text
                 GROUP BY dpw.decision_points_guid, w.type
             ) mitigations ON mitigations.dp_guid = dp.guid
