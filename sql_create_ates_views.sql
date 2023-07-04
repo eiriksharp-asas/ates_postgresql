@@ -11,30 +11,29 @@ BEGIN
             dp.area_guid,
             dp.feature_name,
             dp.feature_description,
-            dp.data_source,
             dp.created_by,
             dp.created_on,
             dp.feature_comments,
-            concerns.warnings AS concerns,
-            mitigations.warnings AS mitigations
+            concerns.warnings_text AS concerns,
+            mitigations.warnings_text AS mitigations
         FROM ' || sch || '.decision_points dp
             JOIN (
                 SELECT dpw.decision_points_guid AS dp_guid,
-                    w.type,
-                    array_agg(w.warning) AS warnings
+                    w.warning_type,
+                    array_agg(w.warning_text) AS warnings_text
                 FROM ' || sch || '.decision_points_warnings dpw
                     JOIN ' || sch || '.lu_warnings w ON dpw.warnings_guid = w.guid
-                WHERE w.type::text = ''Concern''::text
-                GROUP BY dpw.decision_points_guid, w.type
+                WHERE w.warning_type::text = ''Concern''::text
+                GROUP BY dpw.decision_points_guid, w.warning_type
             ) concerns ON concerns.dp_guid = dp.guid
             JOIN (
                 SELECT dpw.decision_points_guid AS dp_guid,
-                    w.type,
-                    array_agg(w.warning) AS warnings
+                    w.warning_type,
+                    array_agg(w.warning_text) AS warnings_text
                 FROM ' || sch || '.decision_points_warnings dpw
                     JOIN ' || sch || '.lu_warnings w ON dpw.warnings_guid = w.guid
-                WHERE w.type::text = ''Managing risk''::text
-                GROUP BY dpw.decision_points_guid, w.type
+                WHERE w.warning_type::text = ''Managing risk''::text
+                GROUP BY dpw.decision_points_guid, w.warning_type
             ) mitigations ON mitigations.dp_guid = dp.guid
         ORDER BY dp.guid
         WITH DATA;

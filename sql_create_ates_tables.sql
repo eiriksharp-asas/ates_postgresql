@@ -27,16 +27,11 @@ BEGIN
     (
         id SERIAL PRIMARY KEY,
 		guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-        geom geometry(MultiPolygon,4326);
-        data_owner character(50) COLLATE pg_catalog."default";
+        geom geometry(MultiPolygon,4326),
         feature_name character varying(250) COLLATE pg_catalog."default" NOT NULL,
         feature_description character(250) COLLATE pg_catalog."default",
-        data_owner character(50) COLLATE pg_catalog."default",
         feature_comments character varying(250) COLLATE pg_catalog."default",
-        CONSTRAINT fk_feature_type FOREIGN KEY (feature_type)
-            REFERENCES ' || sch || '."lu_ates_featureTypes" (feature_type) MATCH SIMPLE
-            ON UPDATE CASCADE
-            ON DELETE NO ACTION
+		data_owner character(50) COLLATE pg_catalog."default"
     )';
 
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.access_roads
@@ -47,7 +42,6 @@ BEGIN
         area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
-        data_owner character(50) COLLATE pg_catalog."default",
         data_source character varying(250) COLLATE pg_catalog."default",
         created_by character varying(50) COLLATE pg_catalog."default",
         created_on timestamp without time zone,
@@ -58,7 +52,7 @@ BEGIN
             ON DELETE NO ACTION
     )';
 
-	    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.avalanche_paths
+	EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.avalanche_paths
     (
         id SERIAL PRIMARY KEY,
         guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
@@ -116,7 +110,7 @@ BEGIN
 		guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         decision_points_guid UUID,
         warnings_guid UUID,
-        CONSTRAINT fk_decisions_points_guid FOREIGN KEY (decisionpoints_guid)
+        CONSTRAINT fk_decisions_points_guid FOREIGN KEY (decision_points_guid)
             REFERENCES ' || sch || '.decision_points (guid) MATCH SIMPLE
             ON UPDATE CASCADE
             ON DELETE NO ACTION,
@@ -300,3 +294,5 @@ END;
 $$ LANGUAGE plpgsql;
 
 SELECT create_tables('ates_dev');
+	
+
