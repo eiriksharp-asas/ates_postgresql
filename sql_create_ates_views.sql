@@ -43,50 +43,67 @@ BEGIN
             (id, concerns COLLATE pg_catalog."default", mitigations COLLATE pg_catalog."default")
             TABLESPACE pg_default;';
 		
-    EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || sch || '."MV_ates_linear20_trails"
+    EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || sch || '."MV_ates20_routes"
         TABLESPACE pg_default
         AS
-        SELECT ates_linear20.id,
-            ates_linear20.geom,
-            ates_linear20.class_code AS ates_class
-        FROM ' || sch || '.ates_linear20
-        WHERE ates_linear20.feature_type = ''Trail''::bpchar
-        ORDER BY ates_linear20.id
+        SELECT ates20_ln.id,
+            ates20_ln.geom,
+            ates20_ln.class_code AS ates_class
+        FROM ' || sch || '.ates20_ln
+        WHERE ates20_ln.feature_type = ''Route''::bpchar
+        ORDER BY ates20_ln.id
         WITH DATA;
         
-        CREATE UNIQUE INDEX IF NOT EXISTS mv_ates_linear20_trails_id
-            ON ' || sch || '."MV_ates_linear20_trails" USING btree
+        CREATE UNIQUE INDEX IF NOT EXISTS mv_ates20_routes_id
+            ON ' || sch || '."MV_ates20_routes" USING btree
             (id, ates_class)
             TABLESPACE pg_default;';
 
-    EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || sch || '."MV_linear20_travel_corridor_buffered"
+    EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || sch || '."MV_ates20_corridor_buffered"
         TABLESPACE pg_default
         AS
-        SELECT ates_linear20.id,
-            st_transform(st_buffer(st_transform(ates_linear20.geom, 3857), ates_linear20.precision_m::double precision), 4326) AS geom,
-            ates_linear20.class_code AS ates_class
-        FROM ' || sch || '.ates_linear20
-        WHERE ates_linear20.feature_type = ''Travel Coridor''::bpchar
-        ORDER BY ates_linear20.id
+        SELECT ates20_ln.id,
+            st_transform(st_buffer(st_transform(ates20_ln.geom, 3857), ates20_ln.precision_m::double precision), 4326) AS geom,
+            ates20_ln.class_code AS ates_class
+        FROM ' || sch || '.ates20_ln
+        WHERE ates20_ln.feature_type = ''Coridor''::bpchar
+        ORDER BY ates20_ln.id
         WITH DATA;
 
-        CREATE UNIQUE INDEX IF NOT EXISTS mv_ates_linear20_travel_corridor_buffered_id
-            ON ' || sch || '."MV_linear20_travel_corridor_buffered" USING btree
+        CREATE UNIQUE INDEX IF NOT EXISTS mv_ates20_corridor_buffered_id
+            ON ' || sch || '."MV_ates20_corridor_buffered" USING btree
             (id, ates_class)
             TABLESPACE pg_default;';
 			
-    EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || sch || '."MV_ates_zones20_buffered"
+    EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || sch || '."MV_ates20_zones_buffered"
         TABLESPACE pg_default
         AS
-        SELECT ates_zones20.id,
-            st_transform(st_buffer(st_transform(ates_zones20.geom, 3857), ates_zones20.precision_m::double precision), 4326) AS geom,
-            ates_zones20.class_code AS ates_class
-        FROM ' || sch || '.ates_zones20
-        ORDER BY ates_zones20.id
+        SELECT ates20_poly.id,
+            st_transform(st_buffer(st_transform(ates20_poly.geom, 3857), ates20_poly.precision_m::double precision), 4326) AS geom,
+            ates20_poly.class_code AS ates_class
+        FROM ' || sch || '.ates20_poly
+        WHERE ates20_poly.feature_type = ''Zone''::bpchar
+        ORDER BY ates20_poly.id
         WITH DATA;
         
-        CREATE UNIQUE INDEX IF NOT EXISTS mv_ates_zones20_buffered_id
-            ON ates_dev."MV_ates_zones20_buffered" USING btree
+        CREATE UNIQUE INDEX IF NOT EXISTS mv_ates20_zones_buffered_id
+            ON ates_dev."MV_ates20_zones_buffered" USING btree
+            (id, ates_class)
+            TABLESPACE pg_default;';
+
+    EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || sch || '."MV_ates20_areas_buffered"
+        TABLESPACE pg_default
+        AS
+        SELECT ates20_poly.id,
+            st_transform(st_buffer(st_transform(ates20_poly.geom, 3857), ates20_poly.precision_m::double precision), 4326) AS geom,
+            ates20_poly.class_code AS ates_class
+        FROM ' || sch || '.ates20_poly
+        WHERE ates20_poly.feature_type = ''Area''::bpchar
+        ORDER BY ates20_poly.id
+        WITH DATA;
+        
+        CREATE UNIQUE INDEX IF NOT EXISTS mv_ates20_areas_buffered_id
+            ON ates_dev."MV_ates20_areas_buffered" USING btree
             (id, ates_class)
             TABLESPACE pg_default;';
 

@@ -23,7 +23,7 @@ BEGIN
         exposure_time character(250) COLLATE pg_catalog."default" UNIQUE
     )';
 
-	EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.areas
+	EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.study_areas
     (
         id SERIAL PRIMARY KEY,
 		guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
@@ -47,7 +47,7 @@ BEGIN
         created_on timestamp without time zone,
         feature_comments character varying(250) COLLATE pg_catalog."default",
         CONSTRAINT fk_area_guid FOREIGN KEY (area_guid)
-            REFERENCES ' || sch || '.areas (guid) MATCH SIMPLE
+            REFERENCES ' || sch || '.study_areas (guid) MATCH SIMPLE
             ON UPDATE NO ACTION
             ON DELETE NO ACTION
     )';
@@ -74,7 +74,7 @@ BEGIN
         dx_average double precision GENERATED ALWAYS AS ((((xb10 * (u_1 - (b_1 * ln((- ln(p)))))) + (xb10 * (u_2 - (b_2 * ln((- ln(p))))))) / (2)::double precision)) STORED,
         feature_comments character(250) COLLATE pg_catalog."default",
         CONSTRAINT fk_area_guid FOREIGN KEY (area_guid)
-            REFERENCES ' || sch || '.areas (guid) MATCH SIMPLE
+            REFERENCES ' || sch || '.study_areas (guid) MATCH SIMPLE
             ON UPDATE CASCADE
             ON DELETE NO ACTION
     )';
@@ -91,7 +91,7 @@ BEGIN
         created_on timestamp without time zone,
         feature_comments character varying(250) COLLATE pg_catalog."default",
         CONSTRAINT fk_area_guid FOREIGN KEY (area_guid)
-            REFERENCES ' || sch || '.areas (guid) MATCH SIMPLE
+            REFERENCES ' || sch || '.study_areas (guid) MATCH SIMPLE
             ON UPDATE NO ACTION
             ON DELETE NO ACTION
     )';
@@ -143,7 +143,7 @@ BEGIN
             poi_type character(50) COLLATE pg_catalog."default",
             feature_comments character(250) COLLATE pg_catalog."default",
             CONSTRAINT fk_area_id FOREIGN KEY (area_guid)
-                REFERENCES ' || sch || '.areas (guid) MATCH SIMPLE
+                REFERENCES ' || sch || '.study_areas (guid) MATCH SIMPLE
                 ON UPDATE CASCADE
                 ON DELETE NO ACTION,
             CONSTRAINT fk_points_of_interst_guid FOREIGN KEY (poi_type)
@@ -152,7 +152,74 @@ BEGIN
                 ON DELETE NO ACTION
         );';
 
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.ates_linear20
+
+EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.ates20_pt
+    (
+        id SERIAL PRIMARY KEY,
+        guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+        geom geometry(Point, 4326) NOT NULL,
+        area_guid UUID,
+        feature_name character varying(250) COLLATE pg_catalog."default",
+        feature_description character varying(500) COLLATE pg_catalog."default",
+        data_source character varying(250) COLLATE pg_catalog."default",
+        created_by character varying(50) COLLATE pg_catalog."default",
+        created_on timestamp without time zone,
+        feature_type character(50) COLLATE pg_catalog."default",
+        class_code integer,
+        slope_angle integer,
+        slope_shape integer,
+        terrain_traps integer,
+        freq_mag integer,
+        startzone_density integer,
+        path_exposure integer,
+        route_options integer,
+        exposure_time integer,
+        feature_comments character varying(250) COLLATE pg_catalog."default",
+        precision_m integer DEFAULT 0,
+        CONSTRAINT fk_area_guid FOREIGN KEY (area_guid)
+            REFERENCES ' || sch || '.study_areas (guid) MATCH SIMPLE
+            ON UPDATE CASCADE
+            ON DELETE NO ACTION,
+        CONSTRAINT fk_class_code FOREIGN KEY (class_code)
+            REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
+            ON UPDATE CASCADE
+            ON DELETE NO ACTION,
+        CONSTRAINT fk_exposure_time_class FOREIGN KEY (exposure_time)
+            REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
+            ON UPDATE CASCADE
+            ON DELETE NO ACTION,
+        CONSTRAINT fk_freq_mag_class FOREIGN KEY (freq_mag)
+            REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
+            ON UPDATE CASCADE
+            ON DELETE NO ACTION,
+        CONSTRAINT fk_path_exposure_class FOREIGN KEY (path_exposure)
+            REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
+            ON UPDATE CASCADE
+            ON DELETE NO ACTION,
+        CONSTRAINT fk_route_options_class FOREIGN KEY (route_options)
+            REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
+            ON UPDATE CASCADE
+            ON DELETE NO ACTION,
+        CONSTRAINT fk_slope_angle_class FOREIGN KEY (slope_angle)
+            REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
+            ON UPDATE CASCADE
+            ON DELETE NO ACTION,
+        CONSTRAINT fk_slope_shape_class FOREIGN KEY (slope_shape)
+            REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
+            ON UPDATE CASCADE
+            ON DELETE NO ACTION,
+        CONSTRAINT fk_startzone_density_class FOREIGN KEY (startzone_density)
+            REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
+            ON UPDATE CASCADE
+            ON DELETE NO ACTION,
+        CONSTRAINT fk_terrain_traps_class FOREIGN KEY (terrain_traps)
+            REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
+            ON UPDATE CASCADE
+            ON DELETE NO ACTION,
+        CONSTRAINT feature_type_check CHECK (feature_type = ANY (ARRAY['Area'::bpchar])) NOT VALID 
+    )';	
+
+    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.ates20_ln
     (
         id SERIAL PRIMARY KEY,
         guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
@@ -176,7 +243,7 @@ BEGIN
         feature_comments character varying(250) COLLATE pg_catalog."default",
         precision_m integer DEFAULT 0,
         CONSTRAINT fk_area_guid FOREIGN KEY (area_guid)
-            REFERENCES ' || sch || '.areas (guid) MATCH SIMPLE
+            REFERENCES ' || sch || '.study_areas (guid) MATCH SIMPLE
             ON UPDATE CASCADE
             ON DELETE NO ACTION,
         CONSTRAINT fk_class_code FOREIGN KEY (class_code)
@@ -185,10 +252,6 @@ BEGIN
             ON DELETE NO ACTION,
         CONSTRAINT fk_exposure_time_class FOREIGN KEY (exposure_time)
             REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
-            ON UPDATE CASCADE
-            ON DELETE NO ACTION,
-        CONSTRAINT fk_feature_type FOREIGN KEY (feature_type)
-            REFERENCES ' || sch || '."lu_ates_featureTypes" (feature_type) MATCH SIMPLE
             ON UPDATE CASCADE
             ON DELETE NO ACTION,
         CONSTRAINT fk_freq_mag_class FOREIGN KEY (freq_mag)
@@ -218,10 +281,11 @@ BEGIN
         CONSTRAINT fk_terrain_traps_class FOREIGN KEY (terrain_traps)
             REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
             ON UPDATE CASCADE
-            ON DELETE NO ACTION
+            ON DELETE NO ACTION,
+        CONSTRAINT feature_type_check CHECK (feature_type = ANY (ARRAY['Route'::bpchar, 'Corridor'::bpchar])) NOT VALID
     )';	
 	
-	EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.ates_zones20
+	EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.ates20_poly
     (
         id SERIAL PRIMARY KEY,
         guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
@@ -245,7 +309,7 @@ BEGIN
         feature_comments character varying(250) COLLATE pg_catalog."default",
         precision_m integer DEFAULT 0,
         CONSTRAINT fk_area_guid FOREIGN KEY (area_guid)
-            REFERENCES ' || sch || '.areas (guid) MATCH SIMPLE
+            REFERENCES ' || sch || '.study_areas (guid) MATCH SIMPLE
             ON UPDATE CASCADE
             ON DELETE NO ACTION,
         CONSTRAINT fk_class_code FOREIGN KEY (class_code)
@@ -254,10 +318,6 @@ BEGIN
             ON DELETE NO ACTION,
         CONSTRAINT fk_exposure_time_class FOREIGN KEY (exposure_time)
             REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
-            ON UPDATE CASCADE
-            ON DELETE NO ACTION,
-        CONSTRAINT fk_feature_type FOREIGN KEY (feature_type)
-            REFERENCES ' || sch || '."lu_ates_featureTypes" (feature_type) MATCH SIMPLE
             ON UPDATE CASCADE
             ON DELETE NO ACTION,
         CONSTRAINT fk_freq_mag_class FOREIGN KEY (freq_mag)
@@ -287,7 +347,8 @@ BEGIN
         CONSTRAINT fk_terrain_traps_class FOREIGN KEY (terrain_traps)
             REFERENCES ' || sch || '.lu_ates20_ratings (class_code) MATCH SIMPLE
             ON UPDATE CASCADE
-            ON DELETE NO ACTION
+            ON DELETE NO ACTION,
+        CONSTRAINT feature_type_check CHECK (feature_type = ANY (ARRAY['Zone'::bpchar, 'Area'::bpchar])) NOT VALID
     )';
 
 END;
