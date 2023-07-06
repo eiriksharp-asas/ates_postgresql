@@ -1,11 +1,11 @@
-CREATE OR REPLACE FUNCTION create_tables(sch text)
+CREATE OR REPLACE FUNCTION CREATE_tables(sch text)
 RETURNS void AS $$
 BEGIN
 
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.lu_ates10_ln_ratings
     (
         id SERIAL PRIMARY KEY,
-		guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+		--guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         class_code integer NOT NULL UNIQUE,
         slope_angle character varying(256) COLLATE pg_catalog."default" UNIQUE,
         slope_shape character varying(256) COLLATE pg_catalog."default" UNIQUE,
@@ -23,7 +23,7 @@ BEGIN
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '."lu_ates10_poly_ratings"
     (
         id SERIAL PRIMARY KEY,
-		guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+		--guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         class_code integer NOT NULL UNIQUE,
         slope_character character varying(256) COLLATE pg_catalog."default" NOT NULL,
         startzone_density character varying(256) COLLATE pg_catalog."default" NOT NULL,
@@ -35,7 +35,7 @@ BEGIN
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.lu_ates20_ratings
     (
         id SERIAL PRIMARY KEY,
-		guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+		--guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         class_code integer NOT NULL UNIQUE,
         slope_angle character(250) COLLATE pg_catalog."default" UNIQUE,
         slope_shape character(250) COLLATE pg_catalog."default" UNIQUE,
@@ -61,14 +61,14 @@ BEGIN
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.access_roads
     (
         id SERIAL PRIMARY KEY,
-        guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         geom geometry(MultiLineString,4326),
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
         data_source character varying(250) COLLATE pg_catalog."default",
-        created_by character varying(50) COLLATE pg_catalog."default",
-        created_on timestamp without time zone,
+        CREATEd_by character varying(50) COLLATE pg_catalog."default",
+        CREATEd_on timestamp without time zone,
         feature_comments character varying(250) COLLATE pg_catalog."default",
         CONSTRAINT fk_assessment_area_guid FOREIGN KEY (assessment_area_guid)
             REFERENCES ' || sch || '.assessment_areas (guid) MATCH SIMPLE
@@ -79,14 +79,14 @@ BEGIN
 	EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.avalanche_paths
     (
         id SERIAL PRIMARY KEY,
-        guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+       --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         geom geometry(LineString, 4326),
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
         data_source character varying(250) COLLATE pg_catalog."default",
-        created_by character varying(50) COLLATE pg_catalog."default",
-        created_on timestamp without time zone,
+        CREATEd_by character varying(50) COLLATE pg_catalog."default",
+        CREATEd_on timestamp without time zone,
         xb10 double precision DEFAULT 0,
         p double precision DEFAULT 0.85,
         u_1 double precision DEFAULT 0.185,
@@ -111,8 +111,8 @@ BEGIN
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
-        created_by character varying(50) COLLATE pg_catalog."default",
-        created_on timestamp without time zone,
+        CREATEd_by character varying(50) COLLATE pg_catalog."default",
+        CREATEd_on timestamp without time zone,
         feature_comments character varying(250) COLLATE pg_catalog."default",
         CONSTRAINT fk_assessment_area_guid FOREIGN KEY (assessment_area_guid)
             REFERENCES ' || sch || '.assessment_areas (guid) MATCH SIMPLE
@@ -147,7 +147,7 @@ BEGIN
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.lu_points_of_interest
     (
         id serial PRIMARY KEY,
-        guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         poi_guid UUID,
         poi_type character varying(250) COLLATE pg_catalog."default" NOT NULL UNIQUE
     )';
@@ -156,14 +156,14 @@ BEGIN
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.points_of_interest
         (
             id serial PRIMARY KEY,
-            guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+            --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
             geom geometry(Point,4326),
             assessment_area_guid UUID,
             feature_name character varying(250) COLLATE pg_catalog."default",
             feature_description character varying(500) COLLATE pg_catalog."default",
             data_source character varying(250) COLLATE pg_catalog."default",
-            created_by character varying(50) COLLATE pg_catalog."default",
-            created_on timestamp without time zone,
+            CREATEd_by character varying(50) COLLATE pg_catalog."default",
+            CREATEd_on timestamp without time zone,
             poi_type character(50) COLLATE pg_catalog."default",
             feature_comments character(250) COLLATE pg_catalog."default",
             CONSTRAINT fk_area_id FOREIGN KEY (assessment_area_guid)
@@ -180,14 +180,14 @@ BEGIN
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || 'ates10_ln
     (
         id serial PRIMARY KEY,
-        guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         geom geometry(MultiLineString,4326),
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
         data_source character varying(250) COLLATE pg_catalog."default",
-        created_by character varying(50) COLLATE pg_catalog."default",
-        created_on timestamp without time zone,
+        CREATEd_by character varying(50) COLLATE pg_catalog."default",
+        CREATEd_on timestamp without time zone,
         class_code integer,
         slope_angle integer,
         slope_shape integer,
@@ -253,14 +253,14 @@ BEGIN
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.ates10_poly
     (
         id serial PRIMARY KEY,
-        guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         geom geometry(MultiPolygon,4326),
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
         data_source character varying(250) COLLATE pg_catalog."default",
-        created_by character varying(50) COLLATE pg_catalog."default",
-        created_on timestamp without time zone,
+        CREATEd_by character varying(50) COLLATE pg_catalog."default",
+        CREATEd_on timestamp without time zone,
         class_code integer,
         slope_character integer,
         startzone_density integer,
@@ -302,14 +302,14 @@ BEGIN
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.ates20_pt
     (
         id SERIAL PRIMARY KEY,
-        guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         geom geometry(Point, 4326) NOT NULL,
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
         data_source character varying(250) COLLATE pg_catalog."default",
-        created_by character varying(50) COLLATE pg_catalog."default",
-        created_on timestamp without time zone,
+        CREATEd_by character varying(50) COLLATE pg_catalog."default",
+        CREATEd_on timestamp without time zone,
         feature_type character(50) COLLATE pg_catalog."default",
         class_code integer,
         slope_angle integer,
@@ -368,14 +368,14 @@ BEGIN
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.ates20_ln
     (
         id SERIAL PRIMARY KEY,
-        guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         geom geometry(MultiLineString, 4326) NOT NULL,
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
         data_source character varying(250) COLLATE pg_catalog."default",
-        created_by character varying(50) COLLATE pg_catalog."default",
-        created_on timestamp without time zone,
+        CREATEd_by character varying(50) COLLATE pg_catalog."default",
+        CREATEd_on timestamp without time zone,
         feature_type character(50) COLLATE pg_catalog."default",
         class_code integer,
         slope_angle integer,
@@ -434,14 +434,14 @@ BEGIN
 	EXECUTE 'CREATE TABLE IF NOT EXISTS ' || sch || '.ates20_poly
     (
         id SERIAL PRIMARY KEY,
-        guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         geom geometry(MultiPolygon, 4326) NOT NULL,
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
         data_source character varying(250) COLLATE pg_catalog."default",
-        created_by character varying(50) COLLATE pg_catalog."default",
-        created_on timestamp without time zone,
+        CREATEd_by character varying(50) COLLATE pg_catalog."default",
+        CREATEd_on timestamp without time zone,
         feature_type character(50) COLLATE pg_catalog."default",
         class_code integer,
         slope_angle integer,
@@ -500,6 +500,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT create_tables('ates_dev');
+SELECT CREATE_tables('ates_dev');
 	
 

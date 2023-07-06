@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION create_views(sch text)
+CREATE OR REPLACE FUNCTION CREATE_views(sch text)
 RETURNS void AS $$
 BEGIN
 
@@ -44,7 +44,7 @@ BEGIN
         AS
         SELECT feature.id,
             feature.geom,
-            feature.guid,
+            --feature.guid,
             assessment_area.text assessment_area,
             feature.class_code AS ates_class,
             slope_angle.text as slope_angle,
@@ -114,7 +114,7 @@ BEGIN
         AS
         SELECT feature.id,
             st_transform(st_buffer(st_transform(feature.geom, 3857), feature.precision_m::double precision), 4326) AS geom,
-            feature.guid,
+            --feature.guid,
             assessment_area.text assessment_area,
             feature.class_code AS ates_class,
             slope_angle.text as slope_angle,
@@ -185,7 +185,7 @@ BEGIN
         AS
         SELECT feature.id,
             st_transform(st_buffer(st_transform(feature.geom, 3857), feature.precision_m::double precision), 4326) AS geom,
-            feature.guid,
+            --feature.guid,
             assessment_area.text assessment_area,
             feature.class_code AS ates_class,
             slope_angle.text as slope_angle,
@@ -256,7 +256,7 @@ BEGIN
         AS
         SELECT feature.id,
             st_transform(st_buffer(st_transform(feature.geom, 3857), feature.precision_m::double precision), 4326) AS geom,
-            feature.guid,
+            --feature.guid,
             assessment_area.text assessment_area,
             feature.class_code AS ates_class,
             slope_angle.text as slope_angle,
@@ -325,4 +325,4 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT create_views('ates_dev');
+SELECT CREATE_views('ates_dev');
