@@ -7,7 +7,6 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || '.lu_ates10_ln_ratings
     (
         id SERIAL PRIMARY KEY,
-        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         class_code integer NOT NULL UNIQUE,
         slope_angle character varying(256) COLLATE pg_catalog."default" UNIQUE,
         slope_shape character varying(256) COLLATE pg_catalog."default" UNIQUE,
@@ -26,7 +25,6 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || '."lu_ates10_poly_ratings"
     (
         id SERIAL PRIMARY KEY,
-        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         class_code integer NOT NULL UNIQUE,
         slope_character character varying(256) COLLATE pg_catalog."default" NOT NULL,
         startzone_density character varying(256) COLLATE pg_catalog."default" NOT NULL,
@@ -39,7 +37,6 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || '.lu_ates20_ratings
     (
         id SERIAL PRIMARY KEY,
-        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         class_code integer NOT NULL UNIQUE,
         slope_angle character(250) COLLATE pg_catalog."default" UNIQUE,
         slope_shape character(250) COLLATE pg_catalog."default" UNIQUE,
@@ -67,8 +64,7 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || '.access_roads
     (
         id SERIAL PRIMARY KEY,
-        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-        geom geometry(MultiLineString,4326),
+        geom geometry(LineString,4326),
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
@@ -86,7 +82,6 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || '.avalanche_paths
     (
         id SERIAL PRIMARY KEY,
-        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         geom geometry(LineString, 4326),
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
@@ -158,7 +153,6 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || '.lu_points_of_interest
     (
         id serial PRIMARY KEY,
-        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         poi_guid UUID,
         poi_type character varying(250) COLLATE pg_catalog."default" NOT NULL UNIQUE
     )';
@@ -168,7 +162,7 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || '.points_of_interest
         (
             id serial PRIMARY KEY,
-            --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+            guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
             geom geometry(Point,4326),
             assessment_area_guid UUID,
             feature_name character varying(250) COLLATE pg_catalog."default",
@@ -190,11 +184,10 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
 
 
     -- Create table ates10_ln
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || 'ates10_ln
+    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || '.ates10_ln
     (
         id serial PRIMARY KEY,
-        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-        geom geometry(MultiLineString,4326),
+        geom geometry(LineString,4326),
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
@@ -267,8 +260,7 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || '.ates10_poly
     (
         id serial PRIMARY KEY,
-        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-        geom geometry(MultiPolygon,4326),
+        geom geometry(Polygon,4326),
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
@@ -317,7 +309,6 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || '.ates20_pt
     (
         id SERIAL PRIMARY KEY,
-        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
         geom geometry(Point, 4326) NOT NULL,
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
@@ -384,8 +375,7 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || '.ates20_ln
     (
         id SERIAL PRIMARY KEY,
-        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-        geom geometry(MultiLineString, 4326) NOT NULL,
+        geom geometry(LineString, 4326) NOT NULL,
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
@@ -444,14 +434,13 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
             REFERENCES ' || schema_name || '.lu_ates20_ratings (class_code) MATCH SIMPLE
             ON UPDATE CASCADE
             ON DELETE NO ACTION,
-        CONSTRAINT feature_type_check CHECK (feature_type in (''Line''))
+        CONSTRAINT feature_type_check CHECK (feature_type in (''Route'',''Corridor''))
     )';
        -- Create table ates20_poly
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || schema_name || '.ates20_poly
     (
         id SERIAL PRIMARY KEY,
-        --guid UUID DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
-        geom geometry(MultiLineString, 4326) NOT NULL,
+        geom geometry(LineString, 4326) NOT NULL,
         assessment_area_guid UUID,
         feature_name character varying(250) COLLATE pg_catalog."default",
         feature_description character varying(500) COLLATE pg_catalog."default",
@@ -510,7 +499,7 @@ CREATE OR REPLACE FUNCTION create_ates_tables(schema_name text)
             REFERENCES ' || schema_name || '.lu_ates20_ratings (class_code) MATCH SIMPLE
             ON UPDATE CASCADE
             ON DELETE NO ACTION,
-        CONSTRAINT feature_type_check CHECK (feature_type in (''Line''))
+        CONSTRAINT feature_type_check CHECK (feature_type in (''Zone'', ''Area''))
     )';
     
     RETURN;
@@ -524,7 +513,8 @@ CREATE OR REPLACE FUNCTION create_ates_views(schema_name text)
     
     -- Create materialized view for "MV_decision_point_warnings"
     EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_decision_point_warnings" TABLESPACE pg_default AS
-        SELECT dp.id,
+        SELECT
+            uuid_generate_v4() AS id,
             dp.guid,
             dp.geom,
             dp.assessment_area_guid,
@@ -555,14 +545,14 @@ CREATE OR REPLACE FUNCTION create_ates_views(schema_name text)
 		
 		CREATE UNIQUE INDEX IF NOT EXISTS mv_ates_decision_point_warnings_id
             ON ' || schema_name || '."MV_decision_point_warnings" USING btree
-            (id, concerns COLLATE pg_catalog."default", mitigations COLLATE pg_catalog."default")
+            (id)
             TABLESPACE pg_default;';
 
     -- Create materialized view for "MV_ates20_routes"	
     EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_ates20_routes" TABLESPACE pg_default AS
-        SELECT feature.id,
+        SELECT
+            uuid_generate_v4() AS id,
             feature.geom,
-            --feature.guid,
             assessment_area.text assessment_area,
             feature.class_code AS ates_class,
             slope_angle.text as slope_angle,
@@ -620,19 +610,18 @@ CREATE OR REPLACE FUNCTION create_ates_views(schema_name text)
                 FROM ' || schema_name || '.lu_ates20_ratings ratings
             ) exposure_time on exposure_time.class_code = feature.slope_angle
         WHERE feature.feature_type = ''Route''::bpchar
-        ORDER BY assessment_area.text
-        WITH DATA;
+        ORDER BY assessment_area.text;
 
         CREATE UNIQUE INDEX IF NOT EXISTS mv_ates20_routes_id
             ON ' || schema_name || '."MV_ates20_routes" USING btree
-            (id, ates_class)
+            (id)
             TABLESPACE pg_default;';
 
     -- Create materialized view for "MV_ates20_corridor_buffered"	
     EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_ates20_corridor_buffered" TABLESPACE pg_default AS
-        SELECT feature.id,
+        SELECT
+            uuid_generate_v4() AS id,
             st_transform(st_buffer(st_transform(feature.geom, 3857), feature.precision_m::double precision), 4326) AS geom,
-            --feature.guid,
             assessment_area.text assessment_area,
             feature.class_code AS ates_class,
             slope_angle.text as slope_angle,
@@ -690,19 +679,35 @@ CREATE OR REPLACE FUNCTION create_ates_views(schema_name text)
                 FROM ' || schema_name || '.lu_ates20_ratings ratings
             ) exposure_time on exposure_time.class_code = feature.slope_angle
         WHERE feature.feature_type = ''Corridor''::bpchar
-        ORDER BY assessment_area.text
-        WITH DATA;
+        ORDER BY assessment_area.text;
 
         CREATE UNIQUE INDEX IF NOT EXISTS mv_ates20_corridor_buffered_id
             ON ' || schema_name || '."MV_ates20_corridor_buffered" USING btree
-            (id, ates_class)
+            (id)
             TABLESPACE pg_default;';
+
+    -- Create materialized view for "MV_ates20_corridor_fuzzy_buffer"	
+    EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_ates20_corridor_fuzzy_buffer" TABLESPACE pg_default AS
+        SELECT
+			uuid_generate_v4() AS id,
+			class_code as ates_class,
+            ST_Transform(ST_Difference(ST_Buffer(ST_Transform(feature.geom, 3857), (feature.precision_m / 10 * d), ''quad_segs=90''), ST_Buffer(ST_Transform(feature.geom, 3857), (feature.precision_m / 10 * (d - 1)), ''quad_segs=90'')), 4326) AS geom,
+            (100-(d)*10) AS transparency
+        FROM
+            ' || schema_name || '.ates20_poly feature,
+        generate_series(1, 10) d(d)
+        WHERE feature.feature_type = ''Corridor''::bpchar;  
+        
+        CREATE UNIQUE INDEX IF NOT EXISTS MV_ates20_corridor_fuzzy_buffer_id
+            ON ' || schema_name || '."MV_ates20_corridor_fuzzy_buffer" USING btree
+            (id)
+            TABLESPACE pg_default;';    
 
     -- Create materialized view for "MV_ates20_zones_buffered"		
     EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_ates20_zones_buffered" TABLESPACE pg_default AS
-        SELECT feature.id,
+        SELECT
+            uuid_generate_v4() AS id,
             st_transform(st_buffer(st_transform(feature.geom, 3857), feature.precision_m::double precision), 4326) AS geom,
-            --feature.guid,
             assessment_area.text assessment_area,
             feature.class_code AS ates_class,
             slope_angle.text as slope_angle,
@@ -760,110 +765,45 @@ CREATE OR REPLACE FUNCTION create_ates_views(schema_name text)
                 FROM ' || schema_name || '.lu_ates20_ratings ratings
             ) exposure_time on exposure_time.class_code = feature.slope_angle
         WHERE feature.feature_type = ''Zone''::bpchar
-        ORDER BY assessment_area.text
-        WITH DATA;
+        ORDER BY assessment_area.text;
         
         CREATE UNIQUE INDEX IF NOT EXISTS MV_ates20_zones_buffered_id
             ON ' || schema_name || '."MV_ates20_zones_buffered" USING btree
-            (id, ates_class)
-            TABLESPACE pg_default;';
-
-     -- Create materialized view for "MV_ates20_zones"
-     EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_ates20_zones"
-	 	TABLESPACE pg_default
-        AS
-	 	SELECT
-            feature.id,
-            feature.geom,
-            --feature.guid,
-            assessment_area.text assessment_area,
-            feature.class_code AS ates_class,
-            slope_angle.text AS slope_angle,
-            slope_shape.text AS slope_shape,
-            terrain_traps.text AS terrain_traps,
-            freq_mag.text AS freq_mag,
-            startzone_density.text as startzone_density,
-            path_exposure.text AS path_exposure,
-            route_options.text AS route_options,
-            exposure_time.text AS exposure_time,
-            (100) AS transparency
-        FROM ' || schema_name || '.ates20_poly feature
-            LEFT JOIN (
-                SELECT assessment_areas.guid,
-                    assessment_areas.feature_name as text	
-                FROM ' || schema_name || '.assessment_areas assessment_areas
-            ) assessment_area on assessment_area.guid = feature.assessment_area_guid
-            INNER JOIN (
-                SELECT ratings.class_code,
-                    ratings.slope_angle as text 	
-                FROM ' || schema_name || '.lu_ates20_ratings ratings
-            ) slope_angle on slope_angle.class_code = feature.slope_angle
-            INNER JOIN(
-                SELECT ratings.class_code,
-                    ratings.slope_shape as text 	
-                FROM ' || schema_name || '.lu_ates20_ratings ratings
-            ) slope_shape on slope_shape.class_code = feature.slope_angle
-            INNER JOIN(
-                SELECT ratings.class_code,
-                    ratings.terrain_traps as text 	
-                FROM ' || schema_name || '.lu_ates20_ratings ratings
-            ) terrain_traps on terrain_traps.class_code = feature.slope_angle
-            INNER JOIN(
-                SELECT ratings.class_code,
-                    ratings.freq_mag as text 	
-                FROM ' || schema_name || '.lu_ates20_ratings ratings
-            ) freq_mag on freq_mag.class_code = feature.slope_angle
-            INNER JOIN(
-                SELECT ratings.class_code,
-                    ratings.startzone_density as text 	
-                FROM ' || schema_name || '.lu_ates20_ratings ratings
-            ) startzone_density on startzone_density.class_code = feature.slope_angle
-            INNER JOIN(
-                SELECT ratings.class_code,
-                    ratings.path_exposure as text 	
-                FROM ' || schema_name || '.lu_ates20_ratings ratings
-            ) path_exposure on path_exposure.class_code = feature.slope_angle
-            INNER JOIN(
-                SELECT ratings.class_code,
-                    ratings.route_options as text 	
-                FROM ' || schema_name || '.lu_ates20_ratings ratings
-            ) route_options on route_options.class_code = feature.slope_angle
-            INNER JOIN(
-                SELECT ratings.class_code,
-                    ratings.exposure_time as text 	
-                FROM ' || schema_name || '.lu_ates20_ratings ratings
-            ) exposure_time on exposure_time.class_code = feature.slope_angle
-        WHERE feature.feature_type = ''Zone''::bpchar
-        ORDER BY assessment_area.text
-        WITH DATA;
-        
-        CREATE UNIQUE INDEX IF NOT EXISTS mv_ates20_zones_id
-            ON ' || schema_name || '."MV_ates20_zones" USING btree
-            (id, ates_class)
+            (id)
             TABLESPACE pg_default;';
 
     -- Create materialized view for "MV_ates20_zones_fuzzy_buffer" 
     EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_ates20_zones_fuzzy_buffer" TABLESPACE pg_default AS
         SELECT
-			id,
+			uuid_generate_v4() AS id,
 			class_code as ates_class,
-            ST_Transform(ST_Difference(ST_Buffer(ST_Transform(geom, 3857), (' || schema_name || '.ates20_poly.precision_m / 10.0 * d), ''quad_segs=90''), ST_Buffer(ST_Transform(geom, 3857), (' || schema_name || '.ates20_poly.precision_m / 10.0 * (d - 1)), ''quad_segs=90'')), 4326)::geometry(Polygon, 4326) AS geom,
-            (100-(d+1)*10) AS transparency
+            ST_Transform(ST_Difference(ST_Buffer(ST_Transform(feature.geom, 3857), (feature.precision_m / 10 * d), ''quad_segs=90''), ST_Buffer(ST_Transform(feature.geom, 3857), (feature.precision_m / 10 * (d - 1)), ''quad_segs=90'')), 4326) AS geom,
+            (100-(d)*10) AS transparency
         FROM
-            ' || schema_name || '.ates20_poly,
-        generate_series(1, 10) as d;
-        
+            ' || schema_name || '.ates20_poly feature,
+            generate_series(1, 10) d(d)
+            WHERE feature.feature_type = ''Zone''::bpchar
+
+        UNION 
+
+        SELECT
+			uuid_generate_v4() AS id,
+			class_code as ates_class,
+            feature.geom,
+            100 AS transparency
+        FROM
+            ' || schema_name || '.ates20_poly feature
+        WHERE feature.feature_type = ''Zone''::bpchar;
 
         CREATE UNIQUE INDEX IF NOT EXISTS MV_ates20_zones_fuzzy_buffer_id
             ON ' || schema_name || '."MV_ates20_zones_fuzzy_buffer" USING btree
-            (id, transparency)
+            (id)
             TABLESPACE pg_default;';
 
-    -- Create materialized view for "MV_ates20_areas_buffered" 
+    -- Create materialized view for "MV_ates20_areas_buffered"		
     EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_ates20_areas_buffered" TABLESPACE pg_default AS
-        SELECT feature.id,
+        SELECT uuid_generate_v4() AS id,
             st_transform(st_buffer(st_transform(feature.geom, 3857), feature.precision_m::double precision), 4326) AS geom,
-            --feature.guid,
             assessment_area.text assessment_area,
             feature.class_code AS ates_class,
             slope_angle.text as slope_angle,
@@ -921,12 +861,39 @@ CREATE OR REPLACE FUNCTION create_ates_views(schema_name text)
                 FROM ' || schema_name || '.lu_ates20_ratings ratings
             ) exposure_time on exposure_time.class_code = feature.slope_angle
         WHERE feature.feature_type = ''Area''::bpchar
-        ORDER BY assessment_area.text
-        WITH DATA;
+        ORDER BY assessment_area.text;
         
         CREATE UNIQUE INDEX IF NOT EXISTS MV_ates20_areas_buffered_id
             ON ' || schema_name || '."MV_ates20_areas_buffered" USING btree
-            (id, ates_class)
+            (id)
+            TABLESPACE pg_default;';
+
+    -- Create materialized view for "MV_ates20_areas_fuzzy_buuffer" 
+    EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_ates20_areas_fuzzy_buffer" TABLESPACE pg_default AS
+        SELECT
+			uuid_generate_v4() AS id,
+			class_code as ates_class,
+            ST_Transform(ST_Difference(ST_Buffer(ST_Transform(feature.geom, 3857), (feature.precision_m / 10 * d), ''quad_segs=90''), ST_Buffer(ST_Transform(feature.geom, 3857), (feature.precision_m / 10 * (d - 1)), ''quad_segs=90'')), 4326) AS geom,
+            (100-(d)*10) AS transparency
+        FROM
+            ' || schema_name || '.ates20_poly feature,
+        generate_series(1, 10) d(d)
+        WHERE feature.feature_type = ''Area''::bpchar  
+
+        UNION 
+
+        SELECT
+			uuid_generate_v4() AS id,
+			class_code as ates_class,
+            feature.geom,
+            100 AS transparency
+        FROM
+            ' || schema_name || '.ates20_poly feature
+        WHERE feature.feature_type = ''Area''::bpchar;      
+
+        CREATE UNIQUE INDEX IF NOT EXISTS MV_ates20_areas_fuzzy_buffer_id
+            ON ' || schema_name || '."MV_ates20_areas_fuzzy_buffer" USING btree
+            (id)
             TABLESPACE pg_default;';
 
     END;
