@@ -512,7 +512,7 @@ CREATE OR REPLACE FUNCTION create_ates_views(schema_name text)
     BEGIN
     
     -- Create materialized view for "MV_decision_point_warnings"
-    EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_decision_point_warnings" TABLESPACE pg_default AS
+ /*   EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_decision_point_warnings" TABLESPACE pg_default AS
         SELECT
             uuid_generate_v4() AS id,
             dp.guid,
@@ -546,7 +546,33 @@ CREATE OR REPLACE FUNCTION create_ates_views(schema_name text)
 		CREATE UNIQUE INDEX IF NOT EXISTS mv_ates_decision_point_warnings_id
             ON ' || schema_name || '."MV_decision_point_warnings" USING btree
             (id)
-            TABLESPACE pg_default;';
+            TABLESPACE pg_default;';*/
+
+    EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_decision_point_warnings" TABLESPACE pg_default AS
+    SELECT
+        dp.guid AS id,
+        dp.geom,
+        dp.assessment_area_guid,
+        dp.feature_name,
+        jsonb_agg(DISTINCT jsonb_build_object(''warning_type'', warnings.warning_type, ''warning_text'', warnings.warnings_text)) AS concerns_and_mitigations
+    FROM ' || schema_name || '.decision_points dp
+    JOIN (
+        SELECT dpw.decision_points_guid AS dp_guid,
+            w.warning_type,
+            array_agg(w.warning_text) AS warnings_text
+        FROM ' || schema_name || '.decision_points_warnings dpw
+        JOIN ' || schema_name || '.lu_warnings w ON dpw.warnings_guid = w.guid
+        WHERE w.warning_type::text IN (''Concern'', ''Managing risk'')
+        GROUP BY dpw.decision_points_guid, w.warning_type
+    ) warnings ON warnings.dp_guid = dp.guid
+    GROUP BY dp.guid, dp.geom, dp.assessment_area_guid, dp.feature_name
+    ORDER BY dp.guid
+    WITH DATA;
+
+CREATE UNIQUE INDEX IF NOT EXISTS mv_ates_decision_point_warnings_id
+    ON ' || schema_name || '.MV_decision_point_warnings USING btree
+    (id)
+    TABLESPACE pg_default;';
 
     -- Create materialized view for "MV_ates20_routes"	
     EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_ates20_routes" TABLESPACE pg_default AS
