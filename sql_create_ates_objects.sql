@@ -549,30 +549,29 @@ CREATE OR REPLACE FUNCTION create_ates_views(schema_name text)
             TABLESPACE pg_default;';*/
 
     EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_decision_point_warnings" TABLESPACE pg_default AS
-    SELECT
-        dp.guid AS id,
-        dp.geom,
-        dp.assessment_area_guid,
-        dp.feature_name,
-        jsonb_agg(DISTINCT jsonb_build_object(''warning_type'', warnings.warning_type, ''warning_text'', warnings.warnings_text)) AS concerns_and_mitigations
-    FROM ' || schema_name || '.decision_points dp
-    JOIN (
-        SELECT dpw.decision_points_guid AS dp_guid,
-            w.warning_type,
-            array_agg(w.warning_text) AS warnings_text
-        FROM ' || schema_name || '.decision_points_warnings dpw
-        JOIN ' || schema_name || '.lu_warnings w ON dpw.warnings_guid = w.guid
-        WHERE w.warning_type::text IN (''Concern'', ''Managing risk'')
-        GROUP BY dpw.decision_points_guid, w.warning_type
-    ) warnings ON warnings.dp_guid = dp.guid
-    GROUP BY dp.guid, dp.geom, dp.assessment_area_guid, dp.feature_name
-    ORDER BY dp.guid
-    WITH DATA;
+        SELECT
+            dp.guid,
+            dp.geom,
+            dp.assessment_area_guid,
+            dp.feature_name,
+            json_agg(json_build_object(''warning_type'', warnings.warning_type, ''warning_text'', warnings.warnings_text) order by warnings.warning_type) AS concerns_and_mitigations
+        FROM ' || schema_name || '.decision_points dp
+        JOIN (
+            SELECT dpw.decision_points_guid AS dp_guid,
+                w.warning_type,
+                array_agg(DISTINCT w.warning_text) AS warnings_text
+            FROM ' || schema_name || '.decision_points_warnings dpw
+            JOIN ' || schema_name || '.lu_warnings w ON dpw.warnings_guid = w.guid
+            WHERE w.warning_type::text IN (''Concern'', ''Managing risk'')
+            GROUP BY dpw.decision_points_guid, w.warning_type
+        ) warnings ON warnings.dp_guid = dp.guid
+        GROUP BY dp.guid, dp.geom, dp.assessment_area_guid, dp.feature_name
+        ORDER BY dp.guid;
 
-CREATE UNIQUE INDEX IF NOT EXISTS mv_ates_decision_point_warnings_id
-    ON ' || schema_name || '.MV_decision_point_warnings USING btree
-    (id)
-    TABLESPACE pg_default;';
+    CREATE UNIQUE INDEX IF NOT EXISTS mv_ates_decision_point_warnings_id
+        ON ' || schema_name || '.MV_decision_point_warnings USING btree
+        (id)
+        TABLESPACE pg_default;';
 
     -- Create materialized view for "MV_ates20_routes"	
     EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_ates20_routes" TABLESPACE pg_default AS
@@ -896,26 +895,25 @@ CREATE UNIQUE INDEX IF NOT EXISTS mv_ates_decision_point_warnings_id
 
     -- Create materialized view for "MV_ates20_areas_fuzzy_buuffer" 
     EXECUTE 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' || schema_name || '."MV_ates20_areas_fuzzy_buffer" TABLESPACE pg_default AS
-        SELECT
-			uuid_generate_v4() AS id,
-			class_code as ates_class,
-            ST_Transform(ST_Difference(ST_Buffer(ST_Transform(feature.geom, 3857), (feature.precision_m / 10 * d), ''quad_segs=90''), ST_Buffer(ST_Transform(feature.geom, 3857), (feature.precision_m / 10 * (d - 1)), ''quad_segs=90'')), 4326) AS geom,
-            (100-(d)*10) AS transparency
-        FROM
-            ' || schema_name || '.ates20_poly feature,
-        generate_series(1, 10) d(d)
-        WHERE feature.feature_type = ''Area''::bpchar  
-
-        UNION 
-
-        SELECT
-			uuid_generate_v4() AS id,
-			class_code as ates_class,
-            feature.geom,
-            100 AS transparency
-        FROM
-            ' || schema_name || '.ates20_poly feature
-        WHERE feature.feature_type = ''Area''::bpchar;      
+        WITH bufferedgeom AS
+            ( SELECT feature.id AS feature_id,
+                    st_buffer(st_transform(feature.geom, 3857), (- feature.precision_m)::double precision, 'join=mitre mitre_limit=5.0'::text) AS transformed_buffered_geom,
+                    feature.class_code,
+                    feature.precision_m
+            FROM ates20_poly feature
+            WHERE feature.feature_type = 'Zone'::bpchar )
+        SELECT uuid_generate_v4() AS id,
+            CASE
+                WHEN d.d >= 1 THEN st_transform(st_difference(st_buffer(bg.transformed_buffered_geom, (2 * bg.precision_m / 20 * d.d)::double precision, 'join=mitre mitre_limit=5.0'::text), st_buffer(bg.transformed_buffered_geom, (2 * bg.precision_m / 20 * (d.d - 1))::double precision, 'join=mitre mitre_limit=5.0'::text)), 4326)
+                ELSE st_transform(bg.transformed_buffered_geom, 4326)
+            END AS geom,
+            bg.class_code AS ates_class,
+            CASE
+                WHEN d.d >= 1 THEN 100 + 100 / (20 * 2) - d.d * (100 / 20)
+                ELSE 100
+            END AS transparency
+        FROM bufferedgeom bg
+        CROSS JOIN generate_series(0, 20) d(d) WITH DATA;      
 
         CREATE UNIQUE INDEX IF NOT EXISTS MV_ates20_areas_fuzzy_buffer_id
             ON ' || schema_name || '."MV_ates20_areas_fuzzy_buffer" USING btree
